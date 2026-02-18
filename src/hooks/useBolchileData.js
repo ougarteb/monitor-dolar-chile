@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
-import { fetchHistorial } from '../lib/supabase'
+import { fetchHistorial, supabase } from '../lib/supabase'
 
-const REFRESH_INTERVAL = 30_000 // 30 seconds
+const REFRESH_INTERVAL = 60_000 // 1 minute fallback
 
 const parseValue = (val, type) => {
     if (!val) return 0
@@ -55,6 +55,29 @@ export function useBolchileData() {
         loadData()
         const interval = setInterval(loadData, REFRESH_INTERVAL)
         return () => clearInterval(interval)
+    }, [loadData])
+
+    // Real-time subscription
+    useEffect(() => {
+        const channel = supabase
+            .channel('bolchile-realtime')
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'bolchile_historial'
+                },
+                (payload) => {
+                    console.log('Realtime update received:', payload)
+                    loadData()
+                }
+            )
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(channel)
+        }
     }, [loadData])
 
     // Derive latest values and percentage changes
