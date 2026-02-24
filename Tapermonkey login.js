@@ -36,11 +36,9 @@
 
         if (yaIntente) return;
 
-        const usernameField = document.querySelector('input[type="email"]') ||
-            document.querySelector('input[type="text"]');
-        const passwordField = document.querySelector('input[type="password"]');
-        const loginButton = document.querySelector('button[aria-label="Iniciar sesión"]') ||
-            document.querySelector('button[type="submit"]');
+        const usernameField = document.querySelector('input#email');
+        const passwordField = document.querySelector('input.p-password-input');
+        const loginButton = document.querySelector('button.btn_blue_dark');
 
         if (!usernameField || !passwordField || !loginButton) return;
 
