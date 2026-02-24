@@ -12,6 +12,9 @@ export async function fetchHistorial(limit = 50) {
     const { data, error } = await supabase
         .from('bolchile_historial')
         .select('*')
+        .gt('valor_actual', 0)
+        .gt('monto_usd', 0)
+        .gt('negocios', 0)
         .order('created_at', { ascending: false })
         .limit(limit)
 

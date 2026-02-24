@@ -34,7 +34,9 @@
     }
 
     function s(datos) {
-        if (!datos.valor_actual) return;
+        if (!datos.valor_actual || parseFloat(datos.valor_actual) <= 0) return;
+        if (!datos.monto_usd || parseFloat(datos.monto_usd) <= 0) return;
+        if (!datos.negocios || parseFloat(datos.negocios) <= 0) return;
         var h = datos.valor_actual + datos.monto_usd + datos.negocios;
         if (h === hash) return;
         GM_xmlhttpRequest({
@@ -58,5 +60,4 @@
     }).observe(node, { childList: true, subtree: true, characterData: true });
 
     setTimeout(function () { s(d()); }, 3000);
-    setTimeout(function () { location.reload(); }, 15 * 60 * 1000);
 })();
