@@ -1,17 +1,17 @@
-import { DollarSign, BarChart3, Briefcase } from 'lucide-react'
 import { useBolchileData } from './hooks/useBolchileData'
 import Header from './components/Header'
-import DashboardRow from './components/DashboardRow'
+import StatCard from './components/StatCard'
+import HistoryTable from './components/HistoryTable'
 
 function LoadingSkeleton() {
   return (
-    <div className="space-y-10 animate-pulse">
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6">
-          <div className="rounded-2xl bg-dark-700/50 h-[220px]" />
-          <div className="rounded-2xl bg-dark-700/50 h-[220px]" />
-        </div>
-      ))}
+    <div className="space-y-8 animate-pulse">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="rounded-2xl bg-dark-700/50 h-[140px]" />
+        ))}
+      </div>
+      <div className="rounded-2xl bg-dark-700/50 h-[400px]" />
     </div>
   )
 }
@@ -24,8 +24,18 @@ function formatValue(val, type) {
   return num.toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
+function formatMillions(val) {
+  if (val == null) return '—'
+  const num = parseFloat(val)
+  if (isNaN(num)) return val
+  const millions = num / 1_000_000
+  return millions.toLocaleString('es-CL', { maximumFractionDigits: 1 }) + 'M'
+}
+
 export default function App() {
-  const { data, latest, changes, loading, lastUpdated } = useBolchileData()
+  const { data, latest, loading, lastUpdated } = useBolchileData()
+
+  const horaLimpia = latest?.hora_limpia ?? '—'
 
   return (
     <div className="min-h-screen flex flex-col justify-start px-6 sm:px-10 lg:px-16 pb-20 max-w-7xl mx-auto">
@@ -37,52 +47,35 @@ export default function App() {
       {loading ? (
         <LoadingSkeleton />
       ) : (
-        <div className="space-y-10">
-          {/* Row 1: Valor Actual (CLP) */}
-          <DashboardRow
-            title="Valor Actual"
-            value={formatValue(latest?.valor_actual, 'decimal')}
-            change={changes.valor_actual}
-            prefix="$"
-            chartData={data}
-            dataKey="valor_actual"
-            chartColor="#34d399"
+        <div className="space-y-8">
+          {/* Row of 4 stat cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard
+              title="Hora"
+              value={horaLimpia}
+              delay={0}
+            />
+            <StatCard
+              title="Precio"
+              value={formatValue(latest?.valor_actual, 'decimal')}
+              prefix="$"
+              delay={0.08}
+            />
+            <StatCard
+              title="Monto"
+              value={formatMillions(latest?.monto_usd)}
+              prefix="US$"
+              delay={0.16}
+            />
+            <StatCard
+              title="Negocios"
+              value={formatValue(latest?.negocios, 'integer')}
+              delay={0.24}
+            />
+          </div>
 
-            chartPrefix="$"
-            yAxisTitle="CLP$"
-            delay={0}
-          />
-
-          {/* Row 2: Monto (USD) */}
-          <DashboardRow
-            title="Monto"
-            value={formatValue(latest?.monto_usd, 'integer')}
-            change={changes.monto_usd}
-            prefix="US$ "
-            chartData={data}
-            dataKey="monto_usd"
-            chartColor="#60a5fa"
-
-            chartPrefix="US$ "
-            yAxisTitle="US$"
-            yFormatter={(v) => (v / 1_000_000).toLocaleString('es-CL', { maximumFractionDigits: 0 }) + 'M'}
-            delay={0.15}
-          />
-
-          {/* Row 3: Negocios */}
-          <DashboardRow
-            title="Negocios"
-            value={formatValue(latest?.negocios, 'integer')}
-            change={changes.negocios}
-            prefix=""
-            chartData={data}
-            dataKey="negocios"
-            chartColor="#a78bfa"
-
-            chartPrefix=""
-            yAxisTitle="Negocios"
-            delay={0.3}
-          />
+          {/* History table */}
+          <HistoryTable data={data} />
         </div>
       )}
 

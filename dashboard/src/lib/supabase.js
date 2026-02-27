@@ -6,23 +6,34 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 /**
- * Fetch the last N records from bolchile_historial, ordered by most recent first.
+ * Fetch today's records from bolchile_historial, starting from 08:00 AM Chile time.
  */
-export async function fetchHistorial(limit = 50) {
+export async function fetchHistorial() {
+    // Get today's 08:00 AM in Chile time, converted to UTC for Supabase
+    const now = new Date()
+    // Get current date components in Chile timezone
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/Santiago',
+        year: 'numeric', month: '2-digit', day: '2-digit'
+    })
+    const [year, month, day] = formatter.format(now).split('-').map(Number)
+    // Create 08:00 Chile time as a string, then parse to get correct UTC
+    const chileStart = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T08:00:00-03:00`)
+    const startOfDay = chileStart.toISOString()
+
     const { data, error } = await supabase
         .from('bolchile_historial')
         .select('*')
         .gt('valor_actual', 0)
         .gt('monto_usd', 0)
         .gt('negocios', 0)
-        .order('created_at', { ascending: false })
-        .limit(limit)
+        .gte('created_at', startOfDay)
+        .order('created_at', { ascending: true })
 
     if (error) {
         console.error('Supabase fetch error:', error)
         return []
     }
 
-    // Reverse so index 0 = oldest, last = newest (for chart display left-to-right)
-    return data.reverse()
+    return data
 }

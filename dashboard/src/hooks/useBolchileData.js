@@ -30,7 +30,7 @@ export function useBolchileData() {
 
     const loadData = useCallback(async () => {
         try {
-            const records = await fetchHistorial(50)
+            const records = await fetchHistorial()
 
             // Post-process data to ensure numbers are clean
             const cleanRecords = records.map(item => ({
