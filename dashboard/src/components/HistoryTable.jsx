@@ -45,7 +45,7 @@ function DeltaCell({ value, format = 'integer' }) {
     )
 }
 
-export default function HistoryTable({ data }) {
+export default function HistoryTable({ data, soloHoy, setSoloHoy }) {
     // Take last 20 records, newest first
     const rows = [...data].reverse().slice(0, 50)
 
@@ -56,10 +56,29 @@ export default function HistoryTable({ data }) {
             transition={{ duration: 0.5, delay: 0.25, ease: 'easeOut' }}
             className="rounded-2xl border border-glass-border bg-glass-bg backdrop-blur-xl overflow-hidden"
         >
-            <div className="px-6 py-4 border-b border-glass-border">
+            <div className="px-6 py-4 border-b border-glass-border flex items-center justify-between">
                 <h2 className="text-sm font-medium text-text-secondary tracking-wide uppercase">
-                    Últimos 50 registros
+                    {soloHoy ? 'Registros de hoy' : 'Últimos 50 registros'}
                 </h2>
+                <div className="flex items-center gap-4">
+                    <span className="text-xs font-medium text-text-muted">
+                        {(() => {
+                            const dateStr = new Intl.DateTimeFormat('es-CL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Santiago' }).format(new Date())
+                            return dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
+                        })()}
+                    </span>
+                    <label className="toggle-switch" title={soloHoy ? 'Mostrando solo hoy' : 'Mostrando últimos 50'}>
+                        <input
+                            type="checkbox"
+                            checked={soloHoy}
+                            onChange={(e) => setSoloHoy(e.target.checked)}
+                        />
+                        <span className="toggle-slider" />
+                        <span className="ml-3 text-xs font-semibold text-text-primary select-none whitespace-nowrap">
+                            Ver sólo hoy
+                        </span>
+                    </label>
+                </div>
             </div>
 
             <div className="overflow-x-auto">
@@ -67,11 +86,9 @@ export default function HistoryTable({ data }) {
                     <thead>
                         <tr className="border-b border-glass-border">
                             <th className="px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Hora</th>
-                            <th className="px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Precio del Dólar</th>
-                            <th className="px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Negocios</th>
-                            <th className="px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Δ Negocios</th>
-                            <th className="px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Monto</th>
-                            <th className="px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Δ Monto</th>
+                            <th className="px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Precio</th>
+                            <th className="px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">🔼 Volumen</th>
+                            <th className="px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">🔼 Negocios</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -86,17 +103,11 @@ export default function HistoryTable({ data }) {
                                 <td className="px-6 py-3 text-sm font-medium text-emerald-glow tabular-nums">
                                     {formatDollar(row.valor_actual)}
                                 </td>
-                                <td className="px-6 py-3 text-sm text-text-primary tabular-nums">
-                                    {formatInteger(row.negocios)}
+                                <td className="px-6 py-3 text-sm tabular-nums">
+                                    <DeltaCell value={row.delta_monto} format="monto" />
                                 </td>
                                 <td className="px-6 py-3 text-sm tabular-nums">
                                     <DeltaCell value={row.delta_negocios} format="integer" />
-                                </td>
-                                <td className="px-6 py-3 text-sm text-text-primary tabular-nums">
-                                    {formatMonto(row.monto_usd)}
-                                </td>
-                                <td className="px-6 py-3 text-sm tabular-nums">
-                                    <DeltaCell value={row.delta_monto} format="monto" />
                                 </td>
                             </tr>
                         ))}

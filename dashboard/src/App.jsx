@@ -33,7 +33,7 @@ function formatMillions(val) {
 }
 
 export default function App() {
-  const { data, latest, loading, lastUpdated } = useBolchileData()
+  const { data, latest, loading, lastUpdated, soloHoy, setSoloHoy } = useBolchileData()
 
   const horaLimpia = latest?.hora_limpia ?? '—'
 
@@ -62,7 +62,7 @@ export default function App() {
               delay={0.08}
             />
             <StatCard
-              title="Monto"
+              title="Volumen"
               value={formatMillions(latest?.monto_usd)}
               prefix="US$"
               delay={0.16}
@@ -75,7 +75,7 @@ export default function App() {
           </div>
 
           {/* History table */}
-          <HistoryTable data={data} />
+          <HistoryTable data={data} soloHoy={soloHoy} setSoloHoy={setSoloHoy} />
         </div>
       )}
 

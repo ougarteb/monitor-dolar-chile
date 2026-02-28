@@ -5,21 +5,10 @@ const REFRESH_INTERVAL = 60_000 // 1 minute fallback
 
 const parseValue = (val, type) => {
     if (!val) return 0
-    // If it's a string like "50.550.000", remove dots before parsing
-    // If type is 'decimal' (like Dollar), it might have dot or comma.
-    // Our data:
-    // - valor_actual: "864.14" (dots for decimals, already accessible as float)
-    // - monto_usd: "50.550.000" (dots for thousands) or "595.52" (could mean 595M?)
-    // - negocios: "1.234" (dots for thousands)
-
     const strVal = String(val)
-
     if (type === 'clean_int') {
-        // Remove dots, then parse int
         return parseInt(strVal.replace(/\./g, ''), 10) || 0
     }
-
-    // For valor_actual, it's already a float-like string or number
     return parseFloat(strVal) || 0
 }
 
@@ -27,29 +16,33 @@ export function useBolchileData() {
     const [data, setData] = useState([])
     const [loading, setLoading] = useState(true)
     const [lastUpdated, setLastUpdated] = useState(null)
+    const [soloHoy, setSoloHoy] = useState(true)
 
     const loadData = useCallback(async () => {
         try {
-            const records = await fetchHistorial()
+            const records = await fetchHistorial(soloHoy)
 
             // Post-process data to ensure numbers are clean
             const cleanRecords = records.map(item => ({
                 ...item,
-                // valor_actual is usually distinct; ensure it's a float
                 valor_actual: parseFloat(String(item.valor_actual).replace(',', '.')) || 0,
-                // monto and negocios likely have thousands dots
                 monto_usd: parseValue(item.monto_usd, 'clean_int'),
                 negocios: parseValue(item.negocios, 'clean_int')
             }))
 
-            setData(cleanRecords)
+            // Filter out zero-value records (glitches from scraper)
+            const validRecords = cleanRecords.filter(item =>
+                item.valor_actual > 0 && item.monto_usd > 0 && item.negocios > 0
+            )
+
+            setData(validRecords)
             setLastUpdated(new Date())
         } catch (err) {
             console.error('Error loading data:', err)
         } finally {
             setLoading(false)
         }
-    }, [])
+    }, [soloHoy])
 
     useEffect(() => {
         loadData()
@@ -98,5 +91,5 @@ export function useBolchileData() {
         negocios: calcChange('negocios'),
     }
 
-    return { data, latest, changes, loading, lastUpdated }
+    return { data, latest, changes, loading, lastUpdated, soloHoy, setSoloHoy }
 }
