@@ -30,12 +30,7 @@ export function useBolchileData() {
                 negocios: parseValue(item.negocios, 'clean_int')
             }))
 
-            // Filter out zero-value records (glitches from scraper)
-            const validRecords = cleanRecords.filter(item =>
-                item.valor_actual > 0 && item.monto_usd > 0 && item.negocios > 0
-            )
-
-            setData(validRecords)
+            setData(cleanRecords)
             setLastUpdated(new Date())
         } catch (err) {
             console.error('Error loading data:', err)
