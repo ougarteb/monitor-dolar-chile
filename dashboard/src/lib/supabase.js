@@ -38,3 +38,20 @@ export async function fetchHistorial(soloHoy = true) {
     // Reverse so index 0 is oldest, last is newest (for tables)
     return data.reverse()
 }
+
+/**
+ * Fetch the live price from bolchile_precio_live (single row, id=1).
+ */
+export async function fetchPrecioLive() {
+    const { data, error } = await supabase
+        .from('bolchile_precio_live')
+        .select('valor_actual, updated_at')
+        .eq('id', 1)
+        .single()
+
+    if (error) {
+        console.error('Supabase precio_live fetch error:', error)
+        return null
+    }
+    return data
+}

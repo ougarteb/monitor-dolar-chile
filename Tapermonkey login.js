@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bolchile Auto Click Login
 // @namespace    http://tampermonkey.net/
-// @version      3.0
+// @version      3.1
 // @description  Detecta pantalla de login, rellena credenciales y hace click en Iniciar sesión
 // @author       Oscar
 // @match        https://www.bolchile.com/*
@@ -50,8 +50,8 @@
         setInputValue(passwordField, PASSWORD);
         console.log("✏️ Credenciales escritas en los campos");
 
-        // Delay aleatorio 2-4s: simula humano
-        const delay = Math.random() * 2000 + 2000;
+        // Delay aleatorio 4-6s: simula humano y da tiempo a reCAPTCHA para inicializarse
+        const delay = Math.random() * 2000 + 4000;
         setTimeout(() => {
             loginButton.click();
             console.log("🚀 Click enviado en login");

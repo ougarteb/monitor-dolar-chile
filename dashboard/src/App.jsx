@@ -29,13 +29,16 @@ function formatMillions(val) {
   const num = parseFloat(val)
   if (isNaN(num)) return val
   const millions = num / 1_000_000
-  return millions.toLocaleString('es-CL', { maximumFractionDigits: 1 }) + 'M'
+  return millions.toLocaleString('es-CL', { maximumFractionDigits: 6 }) + 'M'
 }
 
 export default function App() {
-  const { data, latest, loading, lastUpdated, soloHoy, setSoloHoy } = useBolchileData()
+  const { data, latest, loading, lastUpdated, soloHoy, setSoloHoy, precioLive } = useBolchileData()
 
   const horaLimpia = latest?.hora_limpia ?? '—'
+
+  // Use live price if available, fallback to latest historial
+  const displayPrecio = precioLive ?? latest?.valor_actual
 
   return (
     <div className="min-h-screen flex flex-col justify-start px-6 sm:px-10 lg:px-16 pb-20 max-w-7xl mx-auto">
@@ -48,16 +51,11 @@ export default function App() {
         <LoadingSkeleton />
       ) : (
         <div className="space-y-8">
-          {/* Row of 4 stat cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard
-              title="Hora"
-              value={horaLimpia}
-              delay={0}
-            />
+          {/* Row of 3 stat cards */}
+          <div className="grid grid-cols-3 gap-2 sm:gap-4">
             <StatCard
               title="Precio"
-              value={formatValue(latest?.valor_actual, 'decimal')}
+              value={formatValue(displayPrecio, 'decimal')}
               prefix="$"
               delay={0.08}
             />

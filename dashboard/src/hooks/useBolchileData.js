@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { fetchHistorial, supabase } from '../lib/supabase'
+import { fetchHistorial, fetchPrecioLive, supabase } from '../lib/supabase'
 
 const REFRESH_INTERVAL = 60_000 // 1 minute fallback
 
@@ -17,6 +17,7 @@ export function useBolchileData() {
     const [loading, setLoading] = useState(true)
     const [lastUpdated, setLastUpdated] = useState(null)
     const [soloHoy, setSoloHoy] = useState(true)
+    const [precioLive, setPrecioLive] = useState(null)
 
     const loadData = useCallback(async () => {
         try {
@@ -68,6 +69,24 @@ export function useBolchileData() {
         }
     }, [loadData])
 
+    // Live price: fetch + realtime
+    useEffect(() => {
+        fetchPrecioLive().then(d => { if (d) setPrecioLive(d.valor_actual) })
+
+        const ch = supabase
+            .channel('precio-live-realtime')
+            .on(
+                'postgres_changes',
+                { event: 'UPDATE', schema: 'public', table: 'bolchile_precio_live' },
+                (payload) => {
+                    if (payload.new?.valor_actual) setPrecioLive(payload.new.valor_actual)
+                }
+            )
+            .subscribe()
+
+        return () => supabase.removeChannel(ch)
+    }, [])
+
     // Derive latest values and percentage changes
     const latest = data.length > 0 ? data[data.length - 1] : null
     const previous = data.length > 1 ? data[data.length - 2] : null
@@ -86,5 +105,5 @@ export function useBolchileData() {
         negocios: calcChange('negocios'),
     }
 
-    return { data, latest, changes, loading, lastUpdated, soloHoy, setSoloHoy }
+    return { data, latest, changes, loading, lastUpdated, soloHoy, setSoloHoy, precioLive }
 }

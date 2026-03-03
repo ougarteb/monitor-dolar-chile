@@ -21,22 +21,28 @@ function formatMonto(val) {
     return 'US$' + num.toLocaleString('es-CL', { maximumFractionDigits: 0 })
 }
 
-function DeltaCell({ value, format = 'integer' }) {
+// direction: 'up' | 'down' | 'flat' | null
+function dirColor(direction) {
+    if (direction === 'up') return 'text-emerald-400'
+    if (direction === 'down') return 'text-red-400'
+    return 'text-text-muted'
+}
+
+function DeltaCell({ value, format = 'integer', priceDir = null }) {
     if (value == null) return <span className="text-text-muted">—</span>
     const num = parseFloat(value)
     if (isNaN(num)) return <span className="text-text-muted">—</span>
 
     const isPositive = num > 0
     const isZero = num === 0
-    const sign = isPositive ? '+' : ''
-    const colorClass = isZero
-        ? 'text-text-muted'
-        : isPositive
-            ? 'text-emerald-400'
-            : 'text-red-400'
+    // If priceDir is provided, color follows price direction; otherwise self-direction
+    const colorClass = priceDir
+        ? dirColor(priceDir)
+        : isZero ? 'text-text-muted' : isPositive ? 'text-emerald-400' : 'text-red-400'
+
     const formatted = format === 'monto'
         ? (isPositive ? '+' : isZero ? '' : '-') + 'US$' + Math.abs(num).toLocaleString('es-CL', { maximumFractionDigits: 0 })
-        : sign + num.toLocaleString('es-CL', { maximumFractionDigits: 0 })
+        : (isPositive ? '+' : '') + num.toLocaleString('es-CL', { maximumFractionDigits: 0 })
 
     return (
         <span className={`${colorClass} font-medium tabular-nums`}>
@@ -88,32 +94,42 @@ export default function HistoryTable({ data, soloHoy, setSoloHoy }) {
                             <th className="px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Hora</th>
                             <th className="px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Precio</th>
                             <th className="px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">🔼 Volumen</th>
-                            <th className="px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">🔼 Negocios</th>
+
                         </tr>
                     </thead>
                     <tbody>
-                        {rows.map((row, i) => (
-                            <tr
-                                key={row.id || i}
-                                className={`border-b border-glass-border/50 hover:bg-glass-bg-hover transition-colors duration-200 ${i % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'}`}
-                            >
-                                <td className="px-6 py-3 text-sm text-text-secondary tabular-nums">
-                                    {row.hora_limpia ?? '—'}
-                                </td>
-                                <td className="px-6 py-3 text-sm font-medium text-emerald-glow tabular-nums">
-                                    {formatDollar(row.valor_actual)}
-                                </td>
-                                <td className="px-6 py-3 text-sm tabular-nums">
-                                    <DeltaCell value={row.delta_monto} format="monto" />
-                                </td>
-                                <td className="px-6 py-3 text-sm tabular-nums">
-                                    <DeltaCell value={row.delta_negocios} format="integer" />
-                                </td>
-                            </tr>
-                        ))}
+                        {rows.map((row, i) => {
+                            // Compare price with next row (= previous in time, since sorted newest first)
+                            const prevRow = rows[i + 1]
+                            const priceDelta = prevRow
+                                ? parseFloat(row.valor_actual) - parseFloat(prevRow.valor_actual)
+                                : null
+                            const priceDir = priceDelta == null ? null
+                                : priceDelta > 0 ? 'up'
+                                    : priceDelta < 0 ? 'down'
+                                        : 'flat'
+                            const priceColor = dirColor(priceDir)
+
+                            return (
+                                <tr
+                                    key={row.id || i}
+                                    className={`border-b border-glass-border/50 hover:bg-glass-bg-hover transition-colors duration-200 ${i % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'}`}
+                                >
+                                    <td className="px-6 py-3 text-sm text-text-secondary tabular-nums">
+                                        {row.hora_limpia ?? '—'}
+                                    </td>
+                                    <td className={`px-6 py-3 text-sm font-medium tabular-nums ${priceDir ? priceColor : 'text-emerald-glow'}`}>
+                                        {formatDollar(row.valor_actual)}
+                                    </td>
+                                    <td className="px-6 py-3 text-sm tabular-nums">
+                                        <DeltaCell value={row.delta_monto} format="monto" priceDir={priceDir} />
+                                    </td>
+                                </tr>
+                            )
+                        })}
                         {rows.length === 0 && (
                             <tr>
-                                <td colSpan={6} className="px-6 py-8 text-center text-sm text-text-muted">
+                                <td colSpan={3} className="px-6 py-8 text-center text-sm text-text-muted">
                                     No hay registros disponibles
                                 </td>
                             </tr>
