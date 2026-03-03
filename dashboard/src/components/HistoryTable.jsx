@@ -91,9 +91,9 @@ export default function HistoryTable({ data, soloHoy, setSoloHoy }) {
                 <table className="w-full text-left">
                     <thead>
                         <tr className="border-b border-glass-border">
-                            <th className="px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Hora</th>
-                            <th className="px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Precio</th>
-                            <th className="px-6 py-3 text-xs font-semibold text-text-muted uppercase tracking-wider">🔼 Volumen</th>
+                            <th className="px-6 py-3 text-sm font-semibold text-text-muted uppercase tracking-wider">Hora</th>
+                            <th className="px-6 py-3 text-sm font-semibold text-text-muted uppercase tracking-wider">Precio</th>
+                            <th className="px-6 py-3 text-sm font-semibold text-text-muted uppercase tracking-wider">🔼 Volumen</th>
 
                         </tr>
                     </thead>
@@ -115,13 +115,13 @@ export default function HistoryTable({ data, soloHoy, setSoloHoy }) {
                                     key={row.id || i}
                                     className={`border-b border-glass-border/50 hover:bg-glass-bg-hover transition-colors duration-200 ${i % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'}`}
                                 >
-                                    <td className="px-6 py-3 text-sm text-text-secondary tabular-nums">
+                                    <td className="px-6 py-3 text-base text-text-secondary tabular-nums">
                                         {row.hora_limpia ?? '—'}
                                     </td>
-                                    <td className={`px-6 py-3 text-sm font-medium tabular-nums ${priceDir ? priceColor : 'text-emerald-glow'}`}>
+                                    <td className={`px-6 py-3 text-base font-medium tabular-nums ${priceDir ? priceColor : 'text-emerald-glow'}`}>
                                         {formatDollar(row.valor_actual)}
                                     </td>
-                                    <td className="px-6 py-3 text-sm tabular-nums">
+                                    <td className="px-6 py-3 text-base tabular-nums">
                                         <DeltaCell value={row.delta_monto} format="monto" priceDir={priceDir} />
                                     </td>
                                 </tr>
