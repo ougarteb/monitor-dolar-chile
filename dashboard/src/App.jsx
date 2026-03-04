@@ -79,7 +79,7 @@ export default function App() {
 
       {/* Footer */}
       <div className="mt-16 text-center text-xs text-text-muted">
-        <p>Datos de <a href="https://www.bolchile.com/dollar" target="_blank" rel="noopener noreferrer" className="underline hover:text-text-secondary transition-colors">Bolchile</a> · Desarrollado por <a href="https://vextudio.cl/" target="_blank" rel="noopener noreferrer" className="font-semibold text-text-secondary hover:text-text-primary transition-colors">Vextudio</a></p>
+        <p>Desarrollado por <a href="https://vextudio.cl/" target="_blank" rel="noopener noreferrer" className="font-semibold text-text-secondary hover:text-text-primary transition-colors">Vextudio</a></p>
       </div>
     </div>
   )
