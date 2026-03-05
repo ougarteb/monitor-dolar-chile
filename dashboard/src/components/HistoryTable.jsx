@@ -7,13 +7,6 @@ function formatDollar(val) {
     return '$' + num.toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
-function formatInteger(val) {
-    if (val == null) return '—'
-    const num = typeof val === 'number' ? val : parseInt(String(val).replace(/\./g, ''), 10)
-    if (isNaN(num)) return val
-    return num.toLocaleString('es-CL', { maximumFractionDigits: 0 })
-}
-
 function formatMonto(val) {
     if (val == null) return '—'
     const num = typeof val === 'number' ? val : parseInt(String(val).replace(/\./g, ''), 10)
@@ -35,7 +28,6 @@ function DeltaCell({ value, format = 'integer', priceDir = null }) {
 
     const isPositive = num > 0
     const isZero = num === 0
-    // If priceDir is provided, color follows price direction; otherwise self-direction
     const colorClass = priceDir
         ? dirColor(priceDir)
         : isZero ? 'text-text-muted' : isPositive ? 'text-emerald-400' : 'text-red-400'
@@ -51,9 +43,9 @@ function DeltaCell({ value, format = 'integer', priceDir = null }) {
     )
 }
 
-export default function HistoryTable({ data, soloHoy, setSoloHoy }) {
-    // Take last 20 records, newest first
-    const rows = [...data].reverse().slice(0, 50)
+export default function HistoryTable({ data, soloHoy, setSoloHoy, hasMore, loadMore, loadingMore }) {
+    // data is already newest-first from the hook
+    const rows = data
 
     return (
         <motion.div
@@ -64,7 +56,10 @@ export default function HistoryTable({ data, soloHoy, setSoloHoy }) {
         >
             <div className="px-6 py-4 border-b border-glass-border flex items-center justify-between">
                 <h2 className="text-sm font-medium text-text-secondary tracking-wide uppercase">
-                    {soloHoy ? 'Registros de hoy' : 'Últimos 50 registros'}
+                    {soloHoy ? 'Registros de hoy' : 'Historial'}
+                    <span className="ml-2 text-text-muted font-normal normal-case">
+                        ({rows.length} registros)
+                    </span>
                 </h2>
                 <div className="flex items-center gap-4">
                     <span className="text-xs font-medium text-text-muted">
@@ -73,7 +68,7 @@ export default function HistoryTable({ data, soloHoy, setSoloHoy }) {
                             return dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
                         })()}
                     </span>
-                    <label className="toggle-switch" title={soloHoy ? 'Mostrando solo hoy' : 'Mostrando últimos 50'}>
+                    <label className="toggle-switch" title={soloHoy ? 'Mostrando solo hoy' : 'Mostrando historial'}>
                         <input
                             type="checkbox"
                             checked={soloHoy}
@@ -94,12 +89,10 @@ export default function HistoryTable({ data, soloHoy, setSoloHoy }) {
                             <th className="px-6 py-3 text-sm font-semibold text-text-muted uppercase tracking-wider">Hora</th>
                             <th className="px-6 py-3 text-sm font-semibold text-text-muted uppercase tracking-wider">Precio</th>
                             <th className="px-6 py-3 text-sm font-semibold text-text-muted uppercase tracking-wider">🔼 Volumen</th>
-
                         </tr>
                     </thead>
                     <tbody>
                         {rows.map((row, i) => {
-                            // Compare price with next row (= previous in time, since sorted newest first)
                             const prevRow = rows[i + 1]
                             const priceDelta = prevRow
                                 ? parseFloat(row.valor_actual) - parseFloat(prevRow.valor_actual)
@@ -137,6 +130,33 @@ export default function HistoryTable({ data, soloHoy, setSoloHoy }) {
                     </tbody>
                 </table>
             </div>
+
+            {/* Load more button */}
+            {hasMore && rows.length > 0 && (
+                <div className="px-6 py-4 border-t border-glass-border flex justify-center">
+                    <button
+                        onClick={loadMore}
+                        disabled={loadingMore}
+                        className="px-6 py-2.5 rounded-xl text-sm font-medium transition-all duration-300
+                            border border-glass-border bg-glass-bg hover:bg-glass-bg-hover
+                            text-text-secondary hover:text-text-primary
+                            disabled:opacity-50 disabled:cursor-not-allowed
+                            hover:border-emerald-500/30 active:scale-[0.97]"
+                    >
+                        {loadingMore ? (
+                            <span className="flex items-center gap-2">
+                                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                </svg>
+                                Cargando...
+                            </span>
+                        ) : (
+                            'Ver 100 más'
+                        )}
+                    </button>
+                </div>
+            )}
         </motion.div>
     )
 }

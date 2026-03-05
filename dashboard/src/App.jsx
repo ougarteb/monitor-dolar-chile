@@ -33,7 +33,7 @@ function formatMillions(val) {
 }
 
 export default function App() {
-  const { data, latest, loading, lastUpdated, soloHoy, setSoloHoy, precioLive } = useBolchileData()
+  const { data, latest, loading, loadingMore, hasMore, loadMore, lastUpdated, soloHoy, setSoloHoy, precioLive } = useBolchileData()
 
   const horaLimpia = latest?.hora_limpia ?? '—'
 
@@ -73,7 +73,7 @@ export default function App() {
           </div>
 
           {/* History table */}
-          <HistoryTable data={data} soloHoy={soloHoy} setSoloHoy={setSoloHoy} />
+          <HistoryTable data={data} soloHoy={soloHoy} setSoloHoy={setSoloHoy} hasMore={hasMore} loadMore={loadMore} loadingMore={loadingMore} />
         </div>
       )}
 

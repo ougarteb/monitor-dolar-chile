@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { fetchHistorial, fetchPrecioLive, supabase } from '../lib/supabase'
+import { fetchHistorialPage, fetchPrecioLive, supabase } from '../lib/supabase'
 
 const REFRESH_INTERVAL = 60_000 // 1 minute fallback
 
@@ -12,26 +12,30 @@ const parseValue = (val, type) => {
     return parseFloat(strVal) || 0
 }
 
+function cleanRecords(records) {
+    return records.map(item => ({
+        ...item,
+        valor_actual: parseFloat(String(item.valor_actual).replace(',', '.')) || 0,
+        monto_usd: parseValue(item.monto_usd, 'clean_int'),
+        negocios: parseValue(item.negocios, 'clean_int')
+    }))
+}
+
 export function useBolchileData() {
-    const [data, setData] = useState([])
+    const [data, setData] = useState([])          // all loaded rows, newest-first
     const [loading, setLoading] = useState(true)
+    const [loadingMore, setLoadingMore] = useState(false)
+    const [hasMore, setHasMore] = useState(true)
     const [lastUpdated, setLastUpdated] = useState(null)
     const [soloHoy, setSoloHoy] = useState(true)
     const [precioLive, setPrecioLive] = useState(null)
 
+    // Initial load (resets when soloHoy changes)
     const loadData = useCallback(async () => {
         try {
-            const records = await fetchHistorial(soloHoy)
-
-            // Post-process data to ensure numbers are clean
-            const cleanRecords = records.map(item => ({
-                ...item,
-                valor_actual: parseFloat(String(item.valor_actual).replace(',', '.')) || 0,
-                monto_usd: parseValue(item.monto_usd, 'clean_int'),
-                negocios: parseValue(item.negocios, 'clean_int')
-            }))
-
-            setData(cleanRecords)
+            const { rows, hasMore: more } = await fetchHistorialPage(soloHoy, 0)
+            setData(cleanRecords(rows))
+            setHasMore(more)
             setLastUpdated(new Date())
         } catch (err) {
             console.error('Error loading data:', err)
@@ -40,13 +44,29 @@ export function useBolchileData() {
         }
     }, [soloHoy])
 
+    // Load more (append next page)
+    const loadMore = useCallback(async () => {
+        if (loadingMore || !hasMore) return
+        setLoadingMore(true)
+        try {
+            const offset = data.length
+            const { rows, hasMore: more } = await fetchHistorialPage(soloHoy, offset)
+            setData(prev => [...prev, ...cleanRecords(rows)])
+            setHasMore(more)
+        } catch (err) {
+            console.error('Error loading more data:', err)
+        } finally {
+            setLoadingMore(false)
+        }
+    }, [data.length, soloHoy, loadingMore, hasMore])
+
     useEffect(() => {
         loadData()
         const interval = setInterval(loadData, REFRESH_INTERVAL)
         return () => clearInterval(interval)
     }, [loadData])
 
-    // Real-time subscription
+    // Real-time subscription — prepend new row
     useEffect(() => {
         const channel = supabase
             .channel('bolchile-realtime')
@@ -59,7 +79,9 @@ export function useBolchileData() {
                 },
                 (payload) => {
                     console.log('Realtime update received:', payload)
-                    loadData()
+                    const newRow = cleanRecords([payload.new])[0]
+                    setData(prev => [newRow, ...prev])
+                    setLastUpdated(new Date())
                 }
             )
             .subscribe()
@@ -67,7 +89,7 @@ export function useBolchileData() {
         return () => {
             supabase.removeChannel(channel)
         }
-    }, [loadData])
+    }, [])
 
     // Live price: fetch + realtime
     useEffect(() => {
@@ -87,9 +109,9 @@ export function useBolchileData() {
         return () => supabase.removeChannel(ch)
     }, [])
 
-    // Derive latest values and percentage changes
-    const latest = data.length > 0 ? data[data.length - 1] : null
-    const previous = data.length > 1 ? data[data.length - 2] : null
+    // data is newest-first; latest = data[0], previous = data[1]
+    const latest = data.length > 0 ? data[0] : null
+    const previous = data.length > 1 ? data[1] : null
 
     const calcChange = (key) => {
         if (!latest || !previous) return 0
@@ -105,5 +127,5 @@ export function useBolchileData() {
         negocios: calcChange('negocios'),
     }
 
-    return { data, latest, changes, loading, lastUpdated, soloHoy, setSoloHoy, precioLive }
+    return { data, latest, changes, loading, loadingMore, hasMore, loadMore, lastUpdated, soloHoy, setSoloHoy, precioLive }
 }
