@@ -191,9 +191,6 @@
         yesterday.setDate(yesterday.getDate() - daysToSubtract);
         var fechaAyer = dateOnly.format(yesterday);
 
-        // Mark done immediately to prevent re-entry on rapid DOM changes
-        localStorage.setItem(doneKey, '1');
-
         // SINGLE UPSERT: fila de AYER con TODO — resumen + precio_apertura de hoy
         sbRequest('POST', HISTORIAL_DOLAR_ENDPOINT + '?on_conflict=fecha_archivo', {
             fecha_archivo: fechaAyer,
@@ -206,8 +203,13 @@
             precio_cierre: cleanNumber(ayer.precio_cierre),
             variacion_porc: cleanNumber(ayer.variacion_pct)
         }, { 'Prefer': 'resolution=merge-duplicates,return=minimal' }, function (res) {
-            if (res.status >= 200 && res.status < 300)
+            if (res.status >= 200 && res.status < 300) {
+                // Solo marcar como hecho si Supabase confirmó el insert
+                localStorage.setItem(doneKey, '1');
                 console.log('[Bolchile] \u2705 Reporte diario guardado. fecha_archivo:', fechaAyer, '| apertura:', apertura);
+            } else {
+                console.warn('[Bolchile] \u26a0\ufe0f Insert fallido (status ' + res.status + '). Se reintentará en el próximo cambio de DOM.');
+            }
         });
     }
 

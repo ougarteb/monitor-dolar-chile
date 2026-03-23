@@ -78,31 +78,39 @@ export default function App() {
               <h2 className="text-sm font-medium text-text-secondary tracking-wide uppercase mb-3">
                 Día anterior
               </h2>
-              <div className="grid grid-cols-4 gap-2 sm:gap-4">
+              <div className="grid grid-cols-5 gap-2 sm:gap-4">
                 <StatCard
-                  title="Volumen"
-                  value={resumenAyer.monto_usd ?? '—'}
+                  title="Apertura"
+                  value={formatValue(resumenAyer.precio_apertura, 'decimal')}
+                  prefix="$"
                   delay={0.32}
                 />
                 <StatCard
-                  title="Máximo"
-                  value={resumenAyer.precio_max ?? '—'}
+                  title="Volumen"
+                  value={resumenAyer.monto_us ?? '—'}
                   delay={0.40}
                 />
                 <StatCard
-                  title="Mínimo"
-                  value={resumenAyer.precio_min ?? '—'}
+                  title="Máximo"
+                  value={formatValue(resumenAyer.precio_maximo, 'decimal')}
+                  prefix="$"
                   delay={0.48}
+                />
+                <StatCard
+                  title="Mínimo"
+                  value={formatValue(resumenAyer.precio_minimo, 'decimal')}
+                  prefix="$"
+                  delay={0.56}
                 />
                 <StatCard
                   title="ATR"
                   value={(() => {
-                    const max = parseFloat(String(resumenAyer.precio_max).replace(/[$.]/g, '').replace(',', '.'))
-                    const min = parseFloat(String(resumenAyer.precio_min).replace(/[$.]/g, '').replace(',', '.'))
+                    const max = parseFloat(resumenAyer.precio_maximo)
+                    const min = parseFloat(resumenAyer.precio_minimo)
                     if (isNaN(max) || isNaN(min)) return '—'
                     return '$' + (max - min).toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                   })()}
-                  delay={0.56}
+                  delay={0.64}
                 />
               </div>
             </div>

@@ -66,13 +66,13 @@ export async function fetchPrecioLive() {
 }
 
 /**
- * Fetch the most recent "Ayer" summary from bolchile_resumen_diario.
+ * Fetch the most recent "Ayer" summary from historial_dolar.
  */
 export async function fetchResumenAyer() {
     const { data, error } = await supabase
-        .from('bolchile_resumen_diario')
+        .from('historial_dolar')
         .select('*')
-        .order('fecha', { ascending: false })
+        .order('fecha_archivo', { ascending: false })
         .limit(1)
         .single()
 
