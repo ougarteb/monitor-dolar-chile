@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { fetchHistorialPage, fetchPrecioLive, supabase } from '../lib/supabase'
+import { fetchHistorialPage, fetchPrecioLive, fetchResumenAyer, supabase } from '../lib/supabase'
 
 const REFRESH_INTERVAL = 60_000 // 1 minute fallback
 
@@ -29,6 +29,7 @@ export function useBolchileData() {
     const [lastUpdated, setLastUpdated] = useState(null)
     const [soloHoy, setSoloHoy] = useState(true)
     const [precioLive, setPrecioLive] = useState(null)
+    const [resumenAyer, setResumenAyer] = useState(null)
 
     // Initial load (resets when soloHoy changes)
     const loadData = useCallback(async () => {
@@ -79,9 +80,23 @@ export function useBolchileData() {
                 },
                 (payload) => {
                     console.log('Realtime update received:', payload)
-                    const newRow = cleanRecords([payload.new])[0]
-                    setData(prev => [newRow, ...prev])
-                    setLastUpdated(new Date())
+                    const clean = cleanRecords([payload.new])
+                    if (clean.length > 0) {
+                        const newRow = clean[0]
+                        setData(prev => {
+                            // Combine, remove duplicates by ID, and sort newest-first
+                            const combined = [newRow, ...prev]
+                            const seen = new Set()
+                            return combined
+                                .filter(item => {
+                                    if (seen.has(item.id)) return false
+                                    seen.add(item.id)
+                                    return true
+                                })
+                                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                        })
+                        setLastUpdated(new Date())
+                    }
                 }
             )
             .subscribe()
@@ -94,6 +109,7 @@ export function useBolchileData() {
     // Live price: fetch + realtime
     useEffect(() => {
         fetchPrecioLive().then(d => { if (d) setPrecioLive(d.valor_actual) })
+        fetchResumenAyer().then(d => { if (d) setResumenAyer(d) })
 
         const ch = supabase
             .channel('precio-live-realtime')
@@ -127,5 +143,5 @@ export function useBolchileData() {
         negocios: calcChange('negocios'),
     }
 
-    return { data, latest, changes, loading, loadingMore, hasMore, loadMore, lastUpdated, soloHoy, setSoloHoy, precioLive }
+    return { data, latest, changes, loading, loadingMore, hasMore, loadMore, lastUpdated, soloHoy, setSoloHoy, precioLive, resumenAyer }
 }

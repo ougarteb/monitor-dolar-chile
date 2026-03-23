@@ -33,7 +33,7 @@ function formatMillions(val) {
 }
 
 export default function App() {
-  const { data, latest, loading, loadingMore, hasMore, loadMore, lastUpdated, soloHoy, setSoloHoy, precioLive } = useBolchileData()
+  const { data, latest, loading, loadingMore, hasMore, loadMore, lastUpdated, soloHoy, setSoloHoy, precioLive, resumenAyer } = useBolchileData()
 
   const horaLimpia = latest?.hora_limpia ?? '—'
 
@@ -71,6 +71,42 @@ export default function App() {
               delay={0.24}
             />
           </div>
+
+          {/* Yesterday summary cards */}
+          {resumenAyer && (
+            <div>
+              <h2 className="text-sm font-medium text-text-secondary tracking-wide uppercase mb-3">
+                Día anterior
+              </h2>
+              <div className="grid grid-cols-4 gap-2 sm:gap-4">
+                <StatCard
+                  title="Volumen"
+                  value={resumenAyer.monto_usd ?? '—'}
+                  delay={0.32}
+                />
+                <StatCard
+                  title="Máximo"
+                  value={resumenAyer.precio_max ?? '—'}
+                  delay={0.40}
+                />
+                <StatCard
+                  title="Mínimo"
+                  value={resumenAyer.precio_min ?? '—'}
+                  delay={0.48}
+                />
+                <StatCard
+                  title="ATR"
+                  value={(() => {
+                    const max = parseFloat(String(resumenAyer.precio_max).replace(/[$.]/g, '').replace(',', '.'))
+                    const min = parseFloat(String(resumenAyer.precio_min).replace(/[$.]/g, '').replace(',', '.'))
+                    if (isNaN(max) || isNaN(min)) return '—'
+                    return '$' + (max - min).toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                  })()}
+                  delay={0.56}
+                />
+              </div>
+            </div>
+          )}
 
           {/* History table */}
           <HistoryTable data={data} soloHoy={soloHoy} setSoloHoy={setSoloHoy} hasMore={hasMore} loadMore={loadMore} loadingMore={loadingMore} />

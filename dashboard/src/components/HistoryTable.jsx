@@ -105,7 +105,7 @@ export default function HistoryTable({ data, soloHoy, setSoloHoy, hasMore, loadM
 
                             return (
                                 <tr
-                                    key={row.id || i}
+                                    key={row.id || row.created_at}
                                     className={`border-b border-glass-border/50 hover:bg-glass-bg-hover transition-colors duration-200 ${i % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'}`}
                                 >
                                     <td className="px-6 py-3 text-base text-text-secondary tabular-nums">

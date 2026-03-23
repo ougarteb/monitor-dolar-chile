@@ -64,3 +64,21 @@ export async function fetchPrecioLive() {
     }
     return data
 }
+
+/**
+ * Fetch the most recent "Ayer" summary from bolchile_resumen_diario.
+ */
+export async function fetchResumenAyer() {
+    const { data, error } = await supabase
+        .from('bolchile_resumen_diario')
+        .select('*')
+        .order('fecha', { ascending: false })
+        .limit(1)
+        .single()
+
+    if (error) {
+        console.error('Supabase resumen_ayer fetch error:', error)
+        return null
+    }
+    return data
+}
