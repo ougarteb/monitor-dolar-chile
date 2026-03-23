@@ -15,11 +15,8 @@ export default function Header({ lastUpdated, loading }) {
         >
             <div>
                 <h1 className="text-2xl font-bold tracking-tight text-text-primary">
-                    Tablero personalizado
+                    Monitor Dólar Chile
                 </h1>
-                <p className="text-sm text-text-muted mt-1 font-medium">
-                    Ingrese subtítulo aquí
-                </p>
             </div>
 
             <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-glass-border bg-glass-bg backdrop-blur-xl">

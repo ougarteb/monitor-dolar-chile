@@ -192,6 +192,10 @@
         var fechaAyer = dateOnly.format(yesterday);
 
         // SINGLE UPSERT: fila de AYER con TODO — resumen + precio_apertura de hoy
+        var pcierre = cleanNumber(ayer.precio_cierre);
+        var pvariacion = cleanNumber(ayer.variacion_pct);
+        var completo = pcierre !== null && pvariacion !== null;
+
         sbRequest('POST', HISTORIAL_DOLAR_ENDPOINT + '?on_conflict=fecha_archivo', {
             fecha_archivo: fechaAyer,
             precio_apertura: apertura,
@@ -200,13 +204,18 @@
             precio_maximo: cleanNumber(ayer.precio_max),
             precio_minimo: cleanNumber(ayer.precio_min),
             precio_promedio: cleanNumber(ayer.precio_promedio),
-            precio_cierre: cleanNumber(ayer.precio_cierre),
-            variacion_porc: cleanNumber(ayer.variacion_pct)
+            precio_cierre: pcierre,
+            variacion_porc: pvariacion
         }, { 'Prefer': 'resolution=merge-duplicates,return=minimal' }, function (res) {
             if (res.status >= 200 && res.status < 300) {
-                // Solo marcar como hecho si Supabase confirmó el insert
-                localStorage.setItem(doneKey, '1');
-                console.log('[Bolchile] \u2705 Reporte diario guardado. fecha_archivo:', fechaAyer, '| apertura:', apertura);
+                if (completo) {
+                    // Todos los campos críticos presentes: candado puesto, no reintentar
+                    localStorage.setItem(doneKey, '1');
+                    console.log('[Bolchile] \u2705 Reporte diario completo guardado. fecha_archivo:', fechaAyer, '| apertura:', apertura);
+                } else {
+                    // Cierre/variación aún null: guardado parcial, reintentar en próximo DOM change
+                    console.log('[Bolchile] \u23f3 Reporte parcial guardado (cierre/variaci\u00f3n a\u00fan null). Se reintentar\u00e1.');
+                }
             } else {
                 console.warn('[Bolchile] \u26a0\ufe0f Insert fallido (status ' + res.status + '). Se reintentará en el próximo cambio de DOM.');
             }

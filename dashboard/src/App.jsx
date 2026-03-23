@@ -24,18 +24,9 @@ function formatValue(val, type) {
   return num.toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
-function formatMillions(val) {
-  if (val == null) return '—'
-  const num = parseFloat(val)
-  if (isNaN(num)) return val
-  const millions = num / 1_000_000
-  return millions.toLocaleString('es-CL', { maximumFractionDigits: 6 }) + 'M'
-}
 
 export default function App() {
   const { data, latest, loading, loadingMore, hasMore, loadMore, lastUpdated, soloHoy, setSoloHoy, precioLive, resumenAyer } = useBolchileData()
-
-  const horaLimpia = latest?.hora_limpia ?? '—'
 
   // Use live price if available, fallback to latest historial
   const displayPrecio = precioLive ?? latest?.valor_actual
@@ -51,70 +42,56 @@ export default function App() {
         <LoadingSkeleton />
       ) : (
         <div className="space-y-8">
-          {/* Row of 3 stat cards */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-4">
+          {/* 8 tarjetas · 4 columnas · 2 filas fijas */}
+          <div className="grid grid-cols-4 gap-2 sm:gap-3">
+            {/* Fila 1 */}
             <StatCard
-              title="Precio"
-              value={formatValue(displayPrecio, 'decimal')}
+              title="Apertura hoy"
+              value={formatValue(resumenAyer?.precio_apertura, 'decimal')}
               prefix="$"
               delay={0.08}
             />
             <StatCard
-              title="Volumen"
-              value={formatMillions(latest?.monto_usd)}
-              prefix="US$"
+              title="Precio actual"
+              value={formatValue(displayPrecio, 'decimal')}
+              prefix="$"
+              delay={0.12}
+            />
+            <StatCard
+              title="Volumen actual"
+              value={formatValue(latest?.monto_usd, 'integer')}
+              prefix="US$ "
               delay={0.16}
             />
             <StatCard
-              title="Negocios"
+              title="Negocios actual"
               value={formatValue(latest?.negocios, 'integer')}
+              delay={0.20}
+            />
+            {/* Fila 2 */}
+            <StatCard
+              title="Ayer min-max"
+              value={`$${formatValue(resumenAyer?.precio_minimo, 'decimal')} – $${formatValue(resumenAyer?.precio_maximo, 'decimal')}`}
               delay={0.24}
             />
+            <StatCard
+              title="Cierre ayer"
+              value={formatValue(resumenAyer?.precio_cierre, 'decimal')}
+              prefix="$"
+              delay={0.28}
+            />
+            <StatCard
+              title="Volumen ayer"
+              value={formatValue(resumenAyer?.monto_us, 'integer')}
+              prefix="US$ "
+              delay={0.32}
+            />
+            <StatCard
+              title="Negocios ayer"
+              value={formatValue(resumenAyer?.negocios, 'integer')}
+              delay={0.36}
+            />
           </div>
-
-          {/* Yesterday summary cards */}
-          {resumenAyer && (
-            <div>
-              <h2 className="text-sm font-medium text-text-secondary tracking-wide uppercase mb-3">
-                Día anterior
-              </h2>
-              <div className="grid grid-cols-5 gap-2 sm:gap-4">
-                <StatCard
-                  title="Apertura"
-                  value={formatValue(resumenAyer.precio_apertura, 'decimal')}
-                  prefix="$"
-                  delay={0.32}
-                />
-                <StatCard
-                  title="Volumen"
-                  value={resumenAyer.monto_us ?? '—'}
-                  delay={0.40}
-                />
-                <StatCard
-                  title="Máximo"
-                  value={formatValue(resumenAyer.precio_maximo, 'decimal')}
-                  prefix="$"
-                  delay={0.48}
-                />
-                <StatCard
-                  title="Mínimo"
-                  value={formatValue(resumenAyer.precio_minimo, 'decimal')}
-                  prefix="$"
-                  delay={0.56}
-                />
-                <StatCard
-                  title="ATR"
-                  value={(() => {
-                    const max = parseFloat(resumenAyer.precio_maximo)
-                    const min = parseFloat(resumenAyer.precio_minimo)
-                    if (isNaN(max) || isNaN(min)) return '—'
-                    return '$' + (max - min).toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                  })()}
-                  delay={0.64}
-                />
-              </div>
-            </div>
-          )}
 
           {/* History table */}
           <HistoryTable data={data} soloHoy={soloHoy} setSoloHoy={setSoloHoy} hasMore={hasMore} loadMore={loadMore} loadingMore={loadingMore} />

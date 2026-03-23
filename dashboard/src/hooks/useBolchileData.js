@@ -109,7 +109,12 @@ export function useBolchileData() {
     // Live price: fetch + realtime
     useEffect(() => {
         fetchPrecioLive().then(d => { if (d) setPrecioLive(d.valor_actual) })
-        fetchResumenAyer().then(d => { if (d) setResumenAyer(d) })
+        fetchResumenAyer().then(d => {
+            if (d) {
+                d.monto_us = parseValue(d.monto_us, 'clean_int')
+                setResumenAyer(d)
+            }
+        })
 
         const ch = supabase
             .channel('precio-live-realtime')
@@ -125,23 +130,7 @@ export function useBolchileData() {
         return () => supabase.removeChannel(ch)
     }, [])
 
-    // data is newest-first; latest = data[0], previous = data[1]
     const latest = data.length > 0 ? data[0] : null
-    const previous = data.length > 1 ? data[1] : null
 
-    const calcChange = (key) => {
-        if (!latest || !previous) return 0
-        const curr = latest[key]
-        const prev = previous[key]
-        if (prev === 0) return 0
-        return ((curr - prev) / prev) * 100
-    }
-
-    const changes = {
-        valor_actual: calcChange('valor_actual'),
-        monto_usd: calcChange('monto_usd'),
-        negocios: calcChange('negocios'),
-    }
-
-    return { data, latest, changes, loading, loadingMore, hasMore, loadMore, lastUpdated, soloHoy, setSoloHoy, precioLive, resumenAyer }
+    return { data, latest, loading, loadingMore, hasMore, loadMore, lastUpdated, soloHoy, setSoloHoy, precioLive, resumenAyer }
 }
