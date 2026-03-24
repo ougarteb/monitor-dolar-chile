@@ -49,6 +49,25 @@ export async function fetchHistorialPage(soloHoy = true, offset = 0) {
 }
 
 /**
+ * Fetch the single most-recent row from bolchile_historial (no date filter).
+ * Used for "Volumen actual" and "Negocios actual" cards.
+ */
+export async function fetchLatestHistorial() {
+    const { data, error } = await supabase
+        .from('bolchile_historial')
+        .select('monto_usd, negocios, valor_actual, created_at, id')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+
+    if (error) {
+        console.error('Supabase latest historial fetch error:', error)
+        return null
+    }
+    return data
+}
+
+/**
  * Fetch the live price from bolchile_precio_live (single row, id=1).
  */
 export async function fetchPrecioLive() {

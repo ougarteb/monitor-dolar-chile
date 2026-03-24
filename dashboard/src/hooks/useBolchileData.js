@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { fetchHistorialPage, fetchPrecioLive, fetchResumenAyer, supabase } from '../lib/supabase'
+import { fetchHistorialPage, fetchLatestHistorial, fetchPrecioLive, fetchResumenAyer, supabase } from '../lib/supabase'
 
 const REFRESH_INTERVAL = 60_000 // 1 minute fallback
 
@@ -28,6 +28,7 @@ export function useBolchileData() {
     const [hasMore, setHasMore] = useState(true)
     const [lastUpdated, setLastUpdated] = useState(null)
     const [soloHoy, setSoloHoy] = useState(true)
+    const [latestRow, setLatestRow] = useState(null) // último registro de bolchile_historial, independiente del filtro soloHoy
     const [precioLive, setPrecioLive] = useState(null)
     const [resumenAyer, setResumenAyer] = useState(null)
 
@@ -61,11 +62,27 @@ export function useBolchileData() {
         }
     }, [data.length, soloHoy, loadingMore, hasMore])
 
+    const refreshCards = useCallback(async () => {
+        const [row, resumen] = await Promise.all([
+            fetchLatestHistorial(),
+            fetchResumenAyer()
+        ])
+        if (row) setLatestRow(cleanRecords([row])[0])
+        if (resumen) {
+            resumen.monto_us = parseValue(resumen.monto_us, 'clean_int')
+            setResumenAyer(resumen)
+        }
+    }, [])
+
     useEffect(() => {
         loadData()
-        const interval = setInterval(loadData, REFRESH_INTERVAL)
+        refreshCards()
+        const interval = setInterval(() => {
+            loadData()
+            refreshCards()
+        }, REFRESH_INTERVAL)
         return () => clearInterval(interval)
-    }, [loadData])
+    }, [loadData, refreshCards])
 
     // Real-time subscription — prepend new row
     useEffect(() => {
@@ -83,6 +100,13 @@ export function useBolchileData() {
                     const clean = cleanRecords([payload.new])
                     if (clean.length > 0) {
                         const newRow = clean[0]
+                        // Actualizar latestRow si el nuevo registro es más reciente
+                        setLatestRow(prev => {
+                            if (!prev || new Date(newRow.created_at) > new Date(prev.created_at)) {
+                                return newRow
+                            }
+                            return prev
+                        })
                         setData(prev => {
                             // Combine, remove duplicates by ID, and sort newest-first
                             const combined = [newRow, ...prev]
@@ -109,12 +133,6 @@ export function useBolchileData() {
     // Live price: fetch + realtime
     useEffect(() => {
         fetchPrecioLive().then(d => { if (d) setPrecioLive(d.valor_actual) })
-        fetchResumenAyer().then(d => {
-            if (d) {
-                d.monto_us = parseValue(d.monto_us, 'clean_int')
-                setResumenAyer(d)
-            }
-        })
 
         const ch = supabase
             .channel('precio-live-realtime')
@@ -130,7 +148,9 @@ export function useBolchileData() {
         return () => supabase.removeChannel(ch)
     }, [])
 
-    const latest = data.length > 0 ? data[0] : null
+    // latestRow siempre tiene el último registro de bolchile_historial independiente del filtro soloHoy.
+    // data[0] es fallback por si latestRow aún no cargó.
+    const latest = latestRow ?? (data.length > 0 ? data[0] : null)
 
     return { data, latest, loading, loadingMore, hasMore, loadMore, lastUpdated, soloHoy, setSoloHoy, precioLive, resumenAyer }
 }

@@ -42,7 +42,13 @@
     }
 
     // ── Extract "Ayer" row from the Resumen Comparativo table (all columns) ──
+    // Precio Cierre y Variación % se renderizan via <canvas dolarprice="...">,
+    // por lo que textContent está vacío — hay que leer el atributo directamente.
     function extractResumenAyer() {
+        function canvasDolarprice(cell) {
+            var c = cell.querySelector('canvas[dolarprice]');
+            return c ? c.getAttribute('dolarprice') : cell.textContent.trim();
+        }
         var tables = document.querySelectorAll('table');
         for (var t = 0; t < tables.length; t++) {
             var rows = tables[t].querySelectorAll('tr');
@@ -57,8 +63,8 @@
                             precio_max: cells[3].textContent.trim(),
                             precio_min: cells[4].textContent.trim(),
                             precio_promedio: cells[5].textContent.trim(),
-                            precio_cierre: cells[6].textContent.trim(),
-                            variacion_pct: cells[7].textContent.trim()
+                            precio_cierre: canvasDolarprice(cells[6]),
+                            variacion_pct: canvasDolarprice(cells[7])
                         };
                     }
                 }
@@ -192,9 +198,9 @@
         var fechaAyer = dateOnly.format(yesterday);
 
         // SINGLE UPSERT: fila de AYER con TODO — resumen + precio_apertura de hoy
-        var pcierre = cleanNumber(ayer.precio_cierre);
-        var pvariacion = cleanNumber(ayer.variacion_pct);
-        var completo = pcierre !== null && pvariacion !== null;
+        var pcierre = cleanNumber(ayer.precio_cierre); // formato "$910,65" → cleanNumber lo maneja bien
+        var pvariacion = parseFloat(String(ayer.variacion_pct).replace(',', '.')); // formato "-1.93" (punto decimal) — cleanNumber lo rompe eliminando el punto
+        var completo = pcierre !== null && !isNaN(pvariacion);
 
         sbRequest('POST', HISTORIAL_DOLAR_ENDPOINT + '?on_conflict=fecha_archivo', {
             fecha_archivo: fechaAyer,
