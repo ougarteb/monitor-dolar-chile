@@ -169,16 +169,28 @@
         // Solo operamos de Lunes (1) a Viernes (5)
         if (p.dayOfWeek === 0 || p.dayOfWeek === 6) return;
 
-        // Only act between 07:30 and 10:00 AM Chile
-        if (p.totalMin < 7 * 60 + 30 || p.totalMin > 10 * 60) return;
+        // Only act between 07:45 and 09:00 AM Chile
+        if (p.totalMin < 7 * 60 + 45 || p.totalMin > 9 * 60) return;
 
         // Already done today?
         var doneKey = 'primer_dato_' + p.todayStr;
         if (localStorage.getItem(doneKey)) return;
 
-        // Need canvas price (apertura de hoy)
-        var c = document.querySelector('canvas[valor]');
-        var apertura = c ? parseFloat(c.getAttribute('valor')) : null;
+        // Apertura: usar el valor guardado en localStorage si existe,
+        // de lo contrario leer el canvas y guardarlo inmediatamente.
+        // Así los reintentos siempre usan el primer precio del día, no el actual.
+        var aperturaKey = 'apertura_' + p.todayStr;
+        var apertura;
+        var savedApertura = localStorage.getItem(aperturaKey);
+        if (savedApertura) {
+            apertura = parseFloat(savedApertura);
+        } else {
+            var c = document.querySelector('canvas[valor]');
+            apertura = c ? parseFloat(c.getAttribute('valor')) : null;
+            if (apertura && apertura > 0) {
+                localStorage.setItem(aperturaKey, String(apertura)); // fijar inmediatamente
+            }
+        }
         if (!apertura || apertura <= 0) return;
 
         // Need table data (resumen de ayer) — wait until both are ready
@@ -231,7 +243,7 @@
     // ── Schedule page refresh at 07:30 AM Chile time ──
     function schedulePageRefresh() {
         var p = chileTimeParts();
-        var targetSec = 7 * 3600 + 30 * 60; // 07:30:00
+        var targetSec = 7 * 3600 + 45 * 60; // 07:45:00
         var delaySec = targetSec - p.elapsedSec;
         var daysToAdd = 0;
 
@@ -248,7 +260,7 @@
             delaySec += 1 * 24 * 3600;
         }
 
-        console.log('[Bolchile] \ud83d\udd04 Refresh programado en', Math.round(delaySec / 60), 'minutos (07:30 AM).');
+        console.log('[Bolchile] \ud83d\udd04 Refresh programado en', Math.round(delaySec / 60), 'minutos (07:45 AM).');
         setTimeout(function () { location.reload(); }, delaySec * 1000);
     }
 

@@ -1,6 +1,7 @@
 import { useBolchileData } from './hooks/useBolchileData'
 import Header from './components/Header'
 import StatCard from './components/StatCard'
+import StatCardWithPeriod from './components/StatCardWithPeriod'
 import HistoryTable from './components/HistoryTable'
 
 function LoadingSkeleton() {
@@ -90,6 +91,22 @@ export default function App() {
               title="Negocios ayer"
               value={formatValue(resumenAyer?.negocios, 'integer')}
               delay={0.36}
+            />
+          </div>
+
+          {/* Fila 3: estadísticas históricas de volumen */}
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
+            <StatCardWithPeriod
+              title="Volumen promedio"
+              metric="promedio"
+              prefix="US$ "
+              delay={0.40}
+            />
+            <StatCardWithPeriod
+              title="Volumen máximo"
+              metric="maximo"
+              prefix="US$ "
+              delay={0.44}
             />
           </div>
 

@@ -85,6 +85,33 @@ export async function fetchPrecioLive() {
 }
 
 /**
+ * Fetch volumen stats (promedio y máximo) de los últimos N días hábiles
+ * desde historial_dolar.
+ * @param {number} dias - 7, 20 o 200
+ * @returns {{ promedio: number|null, maximo: number|null }}
+ */
+export async function fetchVolumenStats(dias) {
+    const { data, error } = await supabase
+        .from('historial_dolar')
+        .select('monto_us')
+        .order('fecha_archivo', { ascending: false })
+        .limit(dias)
+
+    if (error || !data || data.length === 0) {
+        console.error('Supabase volumen stats fetch error:', error)
+        return { promedio: null, maximo: null }
+    }
+
+    // monto_us se almacena con formato chileno ("2.456.789") — hay que quitar los puntos de miles
+    const valores = data.map(r => parseFloat(String(r.monto_us).replace(/\./g, '').replace(',', '.'))).filter(v => !isNaN(v) && v > 0)
+    if (valores.length === 0) return { promedio: null, maximo: null }
+
+    const promedio = valores.reduce((a, b) => a + b, 0) / valores.length
+    const maximo = Math.max(...valores)
+    return { promedio, maximo }
+}
+
+/**
  * Fetch the most recent "Ayer" summary from historial_dolar.
  */
 export async function fetchResumenAyer() {
