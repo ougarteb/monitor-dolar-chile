@@ -54,7 +54,7 @@ export default function HistoryTable({ data, soloHoy, setSoloHoy, hasMore, loadM
             transition={{ duration: 0.5, delay: 0.25, ease: 'easeOut' }}
             className="rounded-2xl border border-glass-border bg-glass-bg backdrop-blur-xl overflow-hidden"
         >
-            <div className="px-6 py-4 border-b border-glass-border flex items-center justify-between">
+            <div className="px-4 py-3 border-b border-glass-border flex items-center justify-between">
                 <h2 className="text-sm font-medium text-text-secondary tracking-wide uppercase">
                     {soloHoy ? 'Registros de hoy' : 'Historial'}
                     <span className="ml-2 text-text-muted font-normal normal-case">
@@ -86,9 +86,9 @@ export default function HistoryTable({ data, soloHoy, setSoloHoy, hasMore, loadM
                 <table className="w-full text-left">
                     <thead>
                         <tr className="border-b border-glass-border">
-                            <th className="px-6 py-3 text-sm font-semibold text-text-muted uppercase tracking-wider">Hora</th>
-                            <th className="px-6 py-3 text-sm font-semibold text-text-muted uppercase tracking-wider">Precio</th>
-                            <th className="px-6 py-3 text-sm font-semibold text-text-muted uppercase tracking-wider">🔼 Volumen</th>
+                            <th className="px-4 py-2 text-[10px] sm:text-xs font-semibold text-text-muted uppercase tracking-wider">Hora</th>
+                            <th className="px-4 py-2 text-[10px] sm:text-xs font-semibold text-text-muted uppercase tracking-wider">Precio</th>
+                            <th className="px-4 py-2 text-[10px] sm:text-xs font-semibold text-text-muted uppercase tracking-wider">🔼 Volumen</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -108,13 +108,13 @@ export default function HistoryTable({ data, soloHoy, setSoloHoy, hasMore, loadM
                                     key={row.id || row.created_at}
                                     className={`border-b border-glass-border/50 hover:bg-glass-bg-hover transition-colors duration-200 ${i % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'}`}
                                 >
-                                    <td className="px-6 py-3 text-base text-text-secondary tabular-nums">
+                                    <td className="px-4 py-2 text-xs text-text-secondary tabular-nums">
                                         {row.hora_limpia ?? '—'}
                                     </td>
-                                    <td className={`px-6 py-3 text-base font-medium tabular-nums ${priceDir ? priceColor : 'text-emerald-glow'}`}>
+                                    <td className={`px-4 py-2 text-sm font-medium tabular-nums ${priceDir ? priceColor : 'text-emerald-glow'}`}>
                                         {formatDollar(row.valor_actual)}
                                     </td>
-                                    <td className="px-6 py-3 text-base tabular-nums">
+                                    <td className="px-4 py-2 text-xs tabular-nums">
                                         <DeltaCell value={row.delta_monto} format="monto" priceDir={priceDir} />
                                     </td>
                                 </tr>
@@ -137,7 +137,7 @@ export default function HistoryTable({ data, soloHoy, setSoloHoy, hasMore, loadM
                     <button
                         onClick={loadMore}
                         disabled={loadingMore}
-                        className="px-6 py-2.5 rounded-xl text-sm font-medium transition-all duration-300
+                        className="px-4 py-2 rounded-xl text-xs font-medium transition-all duration-300
                             border border-glass-border bg-glass-bg hover:bg-glass-bg-hover
                             text-text-secondary hover:text-text-primary
                             disabled:opacity-50 disabled:cursor-not-allowed

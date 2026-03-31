@@ -11,20 +11,20 @@ export default function Header({ lastUpdated, loading }) {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10"
+            className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4"
         >
             <div>
-                <h1 className="text-2xl font-bold tracking-tight text-text-primary">
+                <h1 className="text-xl font-bold tracking-tight text-text-primary">
                     Monitor Dólar Chile
                 </h1>
             </div>
 
-            <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-glass-border bg-glass-bg backdrop-blur-xl">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-xl border border-glass-border bg-glass-bg backdrop-blur-xl">
                 <span className="relative flex h-2.5 w-2.5">
                     <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${loading ? 'bg-amber-400 animate-ping' : 'bg-emerald-glow animate-ping'}`} />
                     <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${loading ? 'bg-amber-400' : 'bg-emerald-glow'}`} />
                 </span>
-                <span className="text-xs text-text-secondary font-medium">
+                <span className="text-[11px] text-text-secondary font-medium">
                     {loading ? 'Cargando...' : `Actualizado: ${timeStr}`}
                 </span>
                 <Activity className="w-3.5 h-3.5 text-text-muted" />

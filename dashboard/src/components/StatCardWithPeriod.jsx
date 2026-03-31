@@ -30,13 +30,13 @@ export default function StatCardWithPeriod({ title, metric, prefix = '', delay =
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay, ease: 'easeOut' }}
-            className="flex items-center justify-between rounded-xl border border-glass-border bg-glass-bg backdrop-blur-xl px-4 sm:px-6 py-3 sm:py-4 min-h-[80px] sm:min-h-[95px] overflow-hidden group hover:bg-glass-bg-hover transition-colors duration-300 relative"
+            className="flex items-center justify-between rounded-xl border border-glass-border bg-glass-bg backdrop-blur-xl px-3 sm:px-4 py-2 sm:py-3 min-h-[70px] sm:min-h-[85px] overflow-hidden group hover:bg-glass-bg-hover transition-colors duration-300 relative"
         >
             <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none bg-[radial-gradient(ellipse_at_center,rgba(52,211,153,0.04)_0%,transparent_70%)]" />
 
             {/* Izquierda: título + botones */}
-            <div className="flex flex-col gap-2 relative z-10">
-                <span className="text-[10px] sm:text-xs font-medium text-text-secondary tracking-wide uppercase">
+            <div className="flex flex-col gap-1.5 relative z-10">
+                <span className="text-[9px] sm:text-[10px] font-medium text-text-secondary tracking-wide uppercase">
                     {title}
                 </span>
                 <div className="flex gap-2">
@@ -44,7 +44,7 @@ export default function StatCardWithPeriod({ title, metric, prefix = '', delay =
                         <button
                             key={p}
                             onClick={() => setPeriod(p)}
-                            className={`text-[10px] sm:text-xs font-semibold px-2.5 py-1 rounded-md transition-colors duration-150 ${
+                            className={`text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-md transition-colors duration-150 ${
                                 period === p
                                     ? 'bg-emerald-dim/60 text-emerald-glow'
                                     : 'text-text-muted hover:text-text-secondary'
@@ -62,8 +62,8 @@ export default function StatCardWithPeriod({ title, metric, prefix = '', delay =
                     <span className="text-text-muted animate-pulse text-sm">...</span>
                 ) : (
                     <>
-                        <span className="text-[10px] sm:text-xs font-medium text-text-secondary tracking-wide">{prefix.trim()}</span>
-                        <span className="text-base sm:text-lg font-medium tracking-tight text-text-primary">{formatValue(value)}</span>
+                        <span className="text-[9px] sm:text-[10px] font-medium text-text-secondary tracking-wide">{prefix.trim()}</span>
+                        <span className="text-sm sm:text-base font-medium tracking-tight text-text-primary">{formatValue(value)}</span>
                     </>
                 )}
             </div>

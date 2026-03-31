@@ -35,14 +35,14 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col justify-start px-6 sm:px-10 lg:px-16 pb-20 max-w-7xl mx-auto">
       {/* Spacer to ensure content starts with ~60px of spacing */}
-      <div className="h-16 w-full shrink-0" />
+      <div className="h-8 w-full shrink-0" />
 
       <Header lastUpdated={lastUpdated} loading={loading} />
 
       {loading ? (
         <LoadingSkeleton />
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-4">
           {/* 8 tarjetas · 4 columnas · 2 filas fijas */}
           <div className="grid grid-cols-4 gap-2 sm:gap-3">
             {/* Fila 1 */}
