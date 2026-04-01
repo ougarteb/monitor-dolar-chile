@@ -19,14 +19,14 @@ export default function StatCard({ title, value, prefix = '', delay = 0, change 
             {/* Subtle glow on hover */}
             <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none bg-[radial-gradient(ellipse_at_center,rgba(52,211,153,0.04)_0%,transparent_70%)]" />
 
-            <div className="flex flex-col items-center gap-0.5 sm:gap-1.5 relative z-10 w-full">
-                <div className="flex items-center gap-1.5 mb-0.5">
+            <div className="flex flex-col items-center gap-0 sm:gap-1 relative z-10 w-full">
+                <div className="flex items-center gap-1.5 mb-0">
                     <span className="text-[9px] sm:text-[10px] font-medium text-text-secondary tracking-wide uppercase">
                         {title}
                     </span>
                 </div>
 
-                <p className="text-sm sm:text-base font-medium tracking-tight text-text-primary my-0.5 break-all">
+                <p className="text-[15px] sm:text-[17px] font-medium tracking-tight text-text-primary my-0 break-all">
                     {prefix}{value ?? '—'}
                 </p>
 

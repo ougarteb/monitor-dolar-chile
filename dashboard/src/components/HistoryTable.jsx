@@ -88,7 +88,7 @@ export default function HistoryTable({ data, soloHoy, setSoloHoy, hasMore, loadM
                         <tr className="border-b border-glass-border">
                             <th className="px-4 py-2 text-[10px] sm:text-xs font-semibold text-text-muted uppercase tracking-wider">Hora</th>
                             <th className="px-4 py-2 text-[10px] sm:text-xs font-semibold text-text-muted uppercase tracking-wider">Precio</th>
-                            <th className="px-4 py-2 text-[10px] sm:text-xs font-semibold text-text-muted uppercase tracking-wider">🔼 Volumen</th>
+                            <th className="px-4 py-2 text-[10px] sm:text-xs font-semibold text-text-muted uppercase tracking-wider">▲ Volumen</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -108,13 +108,13 @@ export default function HistoryTable({ data, soloHoy, setSoloHoy, hasMore, loadM
                                     key={row.id || row.created_at}
                                     className={`border-b border-glass-border/50 hover:bg-glass-bg-hover transition-colors duration-200 ${i % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'}`}
                                 >
-                                    <td className="px-4 py-2 text-sm text-text-secondary tabular-nums">
+                                    <td className="px-4 py-2 text-[17px] text-text-secondary tabular-nums">
                                         {row.hora_limpia ?? '—'}
                                     </td>
-                                    <td className={`px-4 py-2 text-base font-medium tabular-nums ${priceDir ? priceColor : 'text-emerald-glow'}`}>
+                                    <td className={`px-4 py-2 text-[17px] font-medium tabular-nums ${priceDir ? priceColor : 'text-emerald-glow'}`}>
                                         {formatDollar(row.valor_actual)}
                                     </td>
-                                    <td className="px-4 py-2 text-sm tabular-nums">
+                                    <td className="px-4 py-2 text-[17px] tabular-nums">
                                         <DeltaCell value={row.delta_monto} format="monto" priceDir={priceDir} />
                                     </td>
                                 </tr>
