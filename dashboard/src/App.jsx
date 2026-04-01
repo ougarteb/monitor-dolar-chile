@@ -1,8 +1,11 @@
+import { useState, useEffect } from 'react'
+import { supabase } from './lib/supabase'
 import { useBolchileData } from './hooks/useBolchileData'
 import Header from './components/Header'
 import StatCard from './components/StatCard'
 import StatCardWithPeriod from './components/StatCardWithPeriod'
 import HistoryTable from './components/HistoryTable'
+import Login from './components/Login'
 
 function LoadingSkeleton() {
   return (
@@ -25,16 +28,43 @@ function formatValue(val, type) {
   return num.toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
-
 export default function App() {
+  const [session, setSession] = useState(null)
+  const [loadingAuth, setLoadingAuth] = useState(true)
+
+  useEffect(() => {
+    // Check current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+      setLoadingAuth(false)
+    })
+
+    // Listen for changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
   const { data, latest, loading, loadingMore, hasMore, loadMore, lastUpdated, soloHoy, setSoloHoy, precioLive, resumenAyer } = useBolchileData()
 
-  // Use live price if available, fallback to latest historial
+  if (loadingAuth) {
+    return (
+      <div className="min-h-screen bg-dark-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-emerald-glow" />
+      </div>
+    )
+  }
+
+  if (!session) {
+    return <Login />
+  }
+
   const displayPrecio = precioLive ?? latest?.valor_actual
 
   return (
     <div className="min-h-screen flex flex-col justify-start px-6 sm:px-10 lg:px-16 pb-20 max-w-7xl mx-auto">
-      {/* Spacer to ensure content starts with ~60px of spacing */}
       <div className="h-8 w-full shrink-0" />
 
       <Header lastUpdated={lastUpdated} loading={loading} />
@@ -43,9 +73,7 @@ export default function App() {
         <LoadingSkeleton />
       ) : (
         <div className="space-y-4">
-          {/* 8 tarjetas · 4 columnas · 2 filas fijas */}
           <div className="grid grid-cols-4 gap-2 sm:gap-3">
-            {/* Fila 1 */}
             <StatCard
               title="Apertura hoy"
               value={formatValue(resumenAyer?.precio_apertura, 'decimal')}
@@ -69,7 +97,6 @@ export default function App() {
               value={formatValue(latest?.negocios, 'integer')}
               delay={0.20}
             />
-            {/* Fila 2 */}
             <StatCard
               title="Ayer min-max"
               value={`$${formatValue(resumenAyer?.precio_minimo, 'decimal')} – $${formatValue(resumenAyer?.precio_maximo, 'decimal')}`}
@@ -94,7 +121,6 @@ export default function App() {
             />
           </div>
 
-          {/* Fila 3: estadísticas históricas de volumen */}
           <div className="grid grid-cols-2 gap-2 sm:gap-3">
             <StatCardWithPeriod
               title="Volumen promedio"
@@ -110,15 +136,14 @@ export default function App() {
             />
           </div>
 
-          {/* History table */}
           <HistoryTable data={data} soloHoy={soloHoy} setSoloHoy={setSoloHoy} hasMore={hasMore} loadMore={loadMore} loadingMore={loadingMore} />
         </div>
       )}
 
-      {/* Footer */}
       <div className="mt-16 text-center text-xs text-text-muted">
         <p>Desarrollado por <a href="https://vextudio.cl/" target="_blank" rel="noopener noreferrer" className="font-semibold text-text-secondary hover:text-text-primary transition-colors">Vextudio</a></p>
       </div>
     </div>
   )
 }
+

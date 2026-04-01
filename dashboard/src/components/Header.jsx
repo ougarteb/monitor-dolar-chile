@@ -1,10 +1,15 @@
 import { motion } from 'framer-motion'
-import { Activity } from 'lucide-react'
+import { Activity, LogOut } from 'lucide-react'
+import { supabase } from '../lib/supabase'
 
 export default function Header({ lastUpdated, loading }) {
     const timeStr = lastUpdated
         ? lastUpdated.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
         : '—'
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut()
+    }
 
     return (
         <motion.header
@@ -13,10 +18,17 @@ export default function Header({ lastUpdated, loading }) {
             transition={{ duration: 0.4 }}
             className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4"
         >
-            <div>
+            <div className="flex items-center gap-4">
                 <h1 className="text-xl font-bold tracking-tight text-text-primary">
                     Monitor Dólar Chile
                 </h1>
+                <button
+                    onClick={handleLogout}
+                    className="p-2 rounded-lg border border-glass-border bg-glass-bg hover:bg-red-dim/20 hover:border-red-glow/30 text-text-muted hover:text-red-glow transition-all duration-300"
+                    title="Cerrar sesión"
+                >
+                    <LogOut className="w-4 h-4" />
+                </button>
             </div>
 
             <div className="flex items-center gap-2 px-3 py-1 rounded-xl border border-glass-border bg-glass-bg backdrop-blur-xl">
@@ -32,3 +44,4 @@ export default function Header({ lastUpdated, loading }) {
         </motion.header>
     )
 }
+
