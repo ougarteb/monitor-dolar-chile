@@ -44,10 +44,10 @@ export default function Login() {
                         <Lock className="w-8 h-8 text-emerald-glow group-hover:scale-110 transition-transform duration-300" />
                     </div>
                     <h1 className="text-3xl font-bold tracking-tight text-text-primary mb-2">
-                        Dashboard Privado
+                        Monitor Dólar Chile
                     </h1>
                     <p className="text-text-secondary text-sm">
-                        Bolchile Real-time Scraper Monitor
+                        Ingresa tus datos para acceder
                     </p>
                 </div>
 
@@ -114,7 +114,7 @@ export default function Login() {
                                 </svg>
                             ) : (
                                 <>
-                                    <span>Entrar al Dashboard</span>
+                                    <span>Entrar</span>
                                     <LogIn className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                 </>
                             )}
