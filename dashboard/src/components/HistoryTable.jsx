@@ -108,13 +108,13 @@ export default function HistoryTable({ data, soloHoy, setSoloHoy, hasMore, loadM
                                     key={row.id || row.created_at}
                                     className={`border-b border-glass-border/50 hover:bg-glass-bg-hover transition-colors duration-200 ${i % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'}`}
                                 >
-                                    <td className="px-4 py-2 text-xs text-text-secondary tabular-nums">
+                                    <td className="px-4 py-2 text-sm text-text-secondary tabular-nums">
                                         {row.hora_limpia ?? '—'}
                                     </td>
-                                    <td className={`px-4 py-2 text-sm font-medium tabular-nums ${priceDir ? priceColor : 'text-emerald-glow'}`}>
+                                    <td className={`px-4 py-2 text-base font-medium tabular-nums ${priceDir ? priceColor : 'text-emerald-glow'}`}>
                                         {formatDollar(row.valor_actual)}
                                     </td>
-                                    <td className="px-4 py-2 text-xs tabular-nums">
+                                    <td className="px-4 py-2 text-sm tabular-nums">
                                         <DeltaCell value={row.delta_monto} format="monto" priceDir={priceDir} />
                                     </td>
                                 </tr>
